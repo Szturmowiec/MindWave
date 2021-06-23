@@ -1,4 +1,5 @@
 import threading
+import numpy as np
 import json
 from NeuroSkyPy import NeuroSkyPy
 import time
@@ -9,10 +10,11 @@ from matplotlib import pyplot as plt
 
 def display_image(filename):
     image = Image.open(filename)
-    plt.imshow(image)
-    plt.show()
-    image.close()
-    time.sleep(2)
+    image_numpy = np.asarray(image)
+    plt.imshow(image_numpy)
+    plt.draw()
+    plt.pause(2.1)
+    plt.close('all')
     return
 
 
@@ -24,14 +26,13 @@ while neuropy.attention == 0:
     print("waiting for measurement to begin...")
     time.sleep(1)
 
-images_dir = os.path.abspath("images")
+images_dir = os.path.abspath("images2")
 for file in os.listdir(images_dir):
     image_data = {"attention": [], "meditation": [], "blinkStrength": [], "highAlpha": [], "lowAlpha": [],
                   "highBeta": [], "lowBeta": [], "delta": [], "lowGamma": [], "midGamma": [], "theta": []}
     image_path = os.path.join(images_dir, file)
     print("currently displayed image: " + file)
     image_thread = threading.Thread(target=display_image, args=(image_path,))
-    image_thread.daemon = True
     image_thread.start()
 
     start = time.time()
@@ -51,9 +52,10 @@ for file in os.listdir(images_dir):
         time.sleep(0.2)
 
     data[file] = image_data
+    image_thread.join()
 
 neuropy.stop()
-with open('brain_scan.json', 'w') as f:
+with open('brain_scan_2.json', 'w') as f:
     json.dump(data, f)
 
 '''
